@@ -18,7 +18,7 @@ jobs:
           GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
         run: |
 
-          git clone https://user:$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview/
+          git clone https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview/
           
           # export pull number
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
@@ -26,18 +26,16 @@ jobs:
           # copy the manifest to the remote directory
           cp ./local/.github/workflows/preview-manifest.yaml ./deploy-preview/manifests/preview-manifest-PR#$PULL_NUM.yaml
           cd deploy-preview
+          git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
+
           git config user.name "AliceProxy"
           git config user.email "alicewasko@datawire.io"
 
-          git checkout -b deploy-preview-PR#$PULL_NUM
-
           git add ./manifests/preview-manifest-PR#$PULL_NUM.yaml
-          git commit -m "preview manifest"
-
-          git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
+          git commit -m "create preview deployment PR-$PULL_NUM"
 
           #git push --set-upstream deploy-preview-$PULL_NUM
-          git push --set-upstream https://user:$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview/ deploy-preview-PR#$PULL_NUM
+          git push https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview.git
 
       - name: Comment link
         uses: actions/github-script@v5
@@ -48,5 +46,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.issue.owner,
               repo: context.repo.repo,
-              body: 'Your PR has been opened'
+              body: 'Your preview manifests have been pushed to the gitops repository'
             })
