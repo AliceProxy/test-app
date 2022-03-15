@@ -1,0 +1,52 @@
+name: Post Preview-URL
+
+on: pull_request
+
+jobs:
+  comment:
+    name: Post Preview-URL # Posts a comment on PR open for testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          path: local
+
+      - name: push manifests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+        run: |
+
+          git clone https://user:$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview/
+          
+          # export pull number
+          export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+
+          # copy the manifest to the remote directory
+          cp ./local/.github/workflows/preview-manifest.yaml ./deploy-preview/manifests/preview-manifest-PR#$PULL_NUM.yaml
+          cd deploy-preview
+          git config user.name "AliceProxy"
+          git config user.email "alicewasko@datawire.io"
+
+          git checkout -b deploy-preview-PR#$PULL_NUM
+
+          git add ./manifests/preview-manifest-PR#$PULL_NUM.yaml
+          git commit -m "preview manifest"
+
+          git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
+
+          #git push --set-upstream deploy-preview-$PULL_NUM
+          git push --set-upstream https://user:$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview/ deploy-preview-PR#$PULL_NUM
+
+      - name: Comment link
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.issue.owner,
+              repo: context.repo.repo,
+              body: 'Your PR has been opened'
+            })
