@@ -18,6 +18,10 @@ jobs:
           GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
         run: |
 
+          if [ -d "./deploy-preview" ]; then
+            rm -rf ./deploy-preview
+          fi
+
           git clone https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview/
           
           # export pull number
