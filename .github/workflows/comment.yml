@@ -7,10 +7,17 @@ jobs:
     name: Post Preview-URL # Posts a comment on PR open for testing
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout local
         uses: actions/checkout@v3
         with:
           path: local
+
+      - name: Checkout remote
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITOPS_TOKEN }}
+          repository: AliceWasko/deploy-preview
+          path: remote
 
       - name: push manifests
         env:
@@ -18,25 +25,19 @@ jobs:
           GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
         run: |
 
-          if [ -d "./deploy-preview" ]; then
-            rm -rf ./deploy-preview
-          fi
-
-          git clone https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview/
-          
           # export pull number
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
           # copy the manifest to the remote directory
-          cp ./local/.github/workflows/preview-manifest.yaml ./deploy-preview/manifests/preview-manifest-PR#$PULL_NUM.yaml
-          cd deploy-preview
+          cp ./local/.github/workflows/preview-manifest.yaml ./remote/manifests/preview-manifest-PR$PULL_NUM.yaml
+          cd remote
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
           git config user.name "AliceProxy"
           git config user.email "alicewasko@datawire.io"
 
-          git add ./manifests/preview-manifest-PR#$PULL_NUM.yaml
-          git commit -m "create preview deployment PR-$PULL_NUM"
+          git add ./manifests/preview-manifest-PR$PULL_NUM.yaml
+          git commit -m "create preview deployment"
 
           #git push --set-upstream deploy-preview-$PULL_NUM
           git push https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview.git
