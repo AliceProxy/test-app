@@ -35,9 +35,7 @@ jobs:
 
           manifest=./manifests/quote-deploy-preview-PR$PULL_NUM.yaml
 
-          # Begin yaml editing---
-
-          # TODO: get the image from CI
+          # Begin yaml editing TODO: get the image from CI
           image='docker.io/datawire/deploy-previews:1.0'
 
           name=$(yq '.metadata.name' $manifest)
@@ -51,14 +49,12 @@ jobs:
           yq -i '.spec.selector.matchLabels.app = '\"${name}'-deploy-preview-PR'${PULL_NUM}\" $manifest
           yq -i '.spec.selector |= .matchLabels |= with_entries(select(.key == "app"))' $manifest
 
-
           # update the image. Right now this edits every container in the deployment. 
           # TODO: edit this to only be for a specific container incase there are multiple containers
           yq -i '.spec.template.spec.containers[] |= .image = '\"${image}\" $manifest
 
           yq -i '.metadata.name = '\"${name}'-deploy-preview-PR'${PULL_NUM}\" $manifest
           yq -i '.metadata.namespace = "deploy-previews"' $manifest
-          # ---End yaml editing
 
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
