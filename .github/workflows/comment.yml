@@ -4,7 +4,7 @@ on: pull_request
 
 jobs:
   comment:
-    name: Post Preview-URL # Posts a comment on PR open for testing
+    name: Deploy Preview Manifests # Posts a comment on PR open for testing
     runs-on: ubuntu-latest
     steps:
       - name: Checkout local
@@ -27,22 +27,23 @@ jobs:
 
           # export pull number
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          export COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
 
           # copy the manifest to the remote directory
-          cp ./local/.github/workflows/preview-manifest.yaml ./remote/manifests/preview-manifest-PR$PULL_NUM.yaml
+          cp ./remote/manifests/quote-deploy.yaml ./remote/manifests/quote-deploy-preview-PR$PULL_NUM.yaml
           cd remote
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
           git config user.name "AliceProxy"
           git config user.email "alicewasko@datawire.io"
 
-          git add ./manifests/preview-manifest-PR$PULL_NUM.yaml
+          git add ./manifests/quote-deploy-preview-PR$PULL_NUM.yaml
           git commit -m "create preview deployment"
 
           #git push --set-upstream deploy-preview-$PULL_NUM
           git push https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview.git
 
-      - name: Comment link
+      - name: Comment complete
         uses: actions/github-script@v5
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
