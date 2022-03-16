@@ -33,7 +33,7 @@ jobs:
 
           # copy the manifest to the remote directory
           rm -f ./remote/manifests/quote-deploy-preview-PR$PULL_NUM.yaml
-
+          cd remote
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
           git config user.name "AliceProxy"
@@ -85,7 +85,7 @@ jobs:
 
           # copy the manifest to the remote directory
           rm -f ./remote/manifests/quote-deploy-preview-PR$PULL_NUM.yaml
-
+          cd remote
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
           git config user.name "AliceProxy"
