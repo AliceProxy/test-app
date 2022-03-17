@@ -6,8 +6,6 @@ jobs:
   quote-job-image:
     name: Build Quote Image
     runs-on: ubuntu-latest
-    outputs: 
-      STORED_QUOTE_IMAGE_TAG: ${{ steps.tag.outputs.STORED_QUOTE_IMAGE_TAG }}
     env:
       DEV_REGISTRY: ${{ secrets.DEV_REGISTRY }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -40,18 +38,7 @@ jobs:
           export COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
 
           docker build -t $DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH .
-          echo "STORED_QUOTE_IMAGE_TAG=$DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH" >> $GITHUB_ENV
-
-      - name: Push Quote Image
-        run: |
-          docker push $STORED_QUOTE_IMAGE_TAG
-
-      - name: Store Quote Image Tag
-        id: tag
-        run: |
-          TAG=${STORED_QUOTE_IMAGE_TAG}
-          echo "marking STORED_QUOTE_IMAGE_TAG as ${TAG}"
-          echo "::set-output name=STORED_QUOTE_IMAGE_TAG::${TAG}"
+          docker push $DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH
 
   comment:
     name: Deploy Preview Manifests # Posts a comment on PR open for testing
@@ -59,7 +46,7 @@ jobs:
     needs:
       - quote-job-image
     env:
-      STORED_QUOTE_IMAGE_TAG: ${{ needs.quote-job-image.outputs.STORED_QUOTE_IMAGE_TAG }}
+      DEV_REGISTRY: ${{ secrets.DEV_REGISTRY }}
     steps:
       - name: Checkout local
         uses: actions/checkout@v3
@@ -94,18 +81,18 @@ jobs:
           namespace=$(yq '.metadata.namespace' $manifest)
 
           # set/modify the app label and remove all others
-          yq -i '.spec.template.metadata.labels.app = '\"${name}'-deploy-preview-PR'${PULL_NUM}-${COMMIT_HASH}\" $manifest
+          yq -i '.spec.template.metadata.labels.app = '\"${name}'-deploy-preview-PR'${PULL_NUM}\" $manifest
           yq -i '.spec.template.metadata |= .labels |= with_entries(select(.key == "app"))' $manifest
 
           # Again for the selector
-          yq -i '.spec.selector.matchLabels.app = '\"${name}'-deploy-preview-PR'${PULL_NUM}-${COMMIT_HASH}\" $manifest
+          yq -i '.spec.selector.matchLabels.app = '\"${name}'-deploy-preview-PR'${PULL_NUM}}\" $manifest
           yq -i '.spec.selector |= .matchLabels |= with_entries(select(.key == "app"))' $manifest
 
           # update the image. Right now this edits every container in the deployment. 
           # TODO: edit this to only be for a specific container incase there are multiple containers
-          yq -i '.spec.template.spec.containers[] |= .image = '\"${STORED_QUOTE_IMAGE_TAG}\" $manifest
+          yq -i '.spec.template.spec.containers[] |= .image = '\"${DEV_REGISTRY}:${PULL_NUM}-${COMMIT_HASH}\" $manifest
 
-          yq -i '.metadata.name = '\"${name}'-deploy-preview-PR'${PULL_NUM}-${COMMIT_HASH}\" $manifest
+          yq -i '.metadata.name = '\"${name}'-deploy-preview-PR'${PULL_NUM}\" $manifest
           yq -i '.metadata.namespace = "deploy-previews"' $manifest
 
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
