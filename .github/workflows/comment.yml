@@ -34,14 +34,15 @@ jobs:
         env:
           GITHUB_TOKEN: $ {{ secrets.GITHUB_TOKEN }}
         run: |
-
+          
           # export pull number
+          cd local
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           export COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
 
           STORED_QUOTE_IMAGE_TAG=$DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH
 
-          docker build -t $STORED_QUOTE_IMAGE_TAG ./local
+          docker build -t $STORED_QUOTE_IMAGE_TAG .
 
           TAG=${STORED_QUOTE_IMAGE_TAG}
           echo "marking STORED_QUOTE_IMAGE_TAG as ${TAG}"
@@ -78,12 +79,13 @@ jobs:
         run: |
 
           # export pull number
+          cd local
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           export COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
 
           # copy the manifest to the remote directory
-          cp ./remote/manifests/quote-deploy.yaml ./remote/manifests/quote-deploy-preview-PR$PULL_NUM.yaml
-          cd remote
+          cd ../remote
+          cp ./manifests/quote-deploy.yaml ./manifests/quote-deploy-preview-PR$PULL_NUM.yaml
 
           manifest=./manifests/quote-deploy-preview-PR$PULL_NUM.yaml
 
