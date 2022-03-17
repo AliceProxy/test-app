@@ -40,8 +40,8 @@ jobs:
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           export COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
 
-          docker build -t $DEV_REGISTRY:$PULL_NUM-COMMIT_HASH ./local
-          echo "STORED_QUOTE_IMAGE_TAG=$DEV_REGISTRY:$PULL_NUM-COMMIT_HASH" >> $GITHUB_ENV
+          docker build -t $DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH ./local
+          echo "STORED_QUOTE_IMAGE_TAG=$DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH" >> $GITHUB_ENV
 
       - name: Push Quote Image
         run: |
