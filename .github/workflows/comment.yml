@@ -30,8 +30,6 @@ jobs:
           password: ${{ env.DOCKER_PASSWORD }}
 
       - name: Build Quote
-        with:
-          dev_registry: ${{ env.DEV_RETGISTRY }}
         env:
           GITHUB_TOKEN: $ {{ secrets.GITHUB_TOKEN }}
         run: |
@@ -40,9 +38,9 @@ jobs:
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           export COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
           
-          docker build -t $dev_registry/quote-preview:$PULL_NUM-COMMIT_HASH ./local
+          docker build -t $DEV_REGISTRY:$PULL_NUM-COMMIT_HASH ./local
 
-          echo "STORED_QUOTE_IMAGE_TAG=$dev_registry/quote-preview:$PULL_NUM-COMMIT_HASH" >> $GITHUB_ENV
+          echo "STORED_QUOTE_IMAGE_TAG=$DEV_REGISTRY:$PULL_NUM-COMMIT_HASH" >> $GITHUB_ENV
 
       - name: Push Quote Image
         run: |
