@@ -73,6 +73,14 @@ jobs:
 
           # copy the manifest to the remote directory
           cd ../remote
+          if [[ -d "./manifests/deploy-previews" ]]
+          then
+              mkdir ./manifests/deploy-previews
+              if [[ -d "./manifests/deploy-previews/quote" ]]
+              then
+                mkdir ./manifests/deploy-previews/quote
+              fi
+          fi
           cp ./manifests/quote/quote-deploy.yaml ./manifests/deploy-previews/quote/quote-deploy-preview-PR$PULL_NUM.yaml
 
           manifest=./manifests/deploy-previews/quote/quote-deploy-preview-PR$PULL_NUM.yaml
