@@ -32,14 +32,14 @@ jobs:
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
           # copy the manifest to the remote directory
-          rm -f ./remote/manifests/quote-deploy-preview-PR$PULL_NUM.yaml
+          rm -f ./remote/manifests/quote-deploy-preview-pr$PULL_NUM.yaml
           cd remote
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
           git config user.name "AliceProxy"
           git config user.email "alicewasko@datawire.io"
 
-          git add ./manifests/quote-deploy-preview-PR$PULL_NUM.yaml
+          git add ./manifests/quote-deploy-preview-pr$PULL_NUM.yaml
           git commit -m "destroy preview deployment"
 
           #git push --set-upstream deploy-preview-$PULL_NUM
@@ -84,14 +84,14 @@ jobs:
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
           # copy the manifest to the remote directory
-          rm -f ./remote/manifests/quote-deploy-preview-PR$PULL_NUM.yaml
+          rm -f ./remote/manifests/quote-deploy-preview-pr$PULL_NUM.yaml
           cd remote
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
           git config user.name "AliceProxy"
           git config user.email "alicewasko@datawire.io"
 
-          git add ./manifests/quote-deploy-preview-PR$PULL_NUM.yaml
+          git add ./manifests/quote-deploy-preview-pr$PULL_NUM.yaml
           git commit -m "destroy preview deployment"
 
           #git push --set-upstream deploy-preview-$PULL_NUM
