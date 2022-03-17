@@ -7,7 +7,7 @@ jobs:
     name: Build Quote Image
     runs-on: ubuntu-latest
     outputs:
-      STORED_QUOTE_IMAGE_TAG: ${{ steps.tag.outputs.STORED_AES_IMAGE_TAG }}
+      STORED_QUOTE_IMAGE_TAG: ${{ steps.tag.outputs.STORED_QUOTE_IMAGE_TAG }}
     env:
       DEV_REGISTRY: ${{ secrets.DEV_REGISTRY }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -30,6 +30,7 @@ jobs:
           password: ${{ env.DOCKER_PASSWORD }}
 
       - name: Build Quote
+        id: tag
         env:
           GITHUB_TOKEN: $ {{ secrets.GITHUB_TOKEN }}
         run: |
@@ -37,22 +38,18 @@ jobs:
           # export pull number
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           export COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
-          
-          docker build -t $DEV_REGISTRY:$PULL_NUM-COMMIT_HASH ./local
 
-          echo "STORED_QUOTE_IMAGE_TAG=$DEV_REGISTRY:$PULL_NUM-COMMIT_HASH" >> $GITHUB_ENV
+          STORED_QUOTE_IMAGE_TAG=$DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH
 
-      - name: Push Quote Image
-        run: |
-          docker push $STORED_QUOTE_IMAGE_TAG
+          docker build -t $DEV_REGISTRY:$STORED_QUOTE_IMAGE_TAG ./local
 
-      - name: Store Quote Image Tag
-        id: tag
-        run: |
           TAG=${STORED_QUOTE_IMAGE_TAG}
           echo "marking STORED_QUOTE_IMAGE_TAG as ${TAG}"
           echo "::set-output name=STORED_QUOTE_IMAGE_TAG::${TAG}"
 
+      - name: Push Quote Image
+        run: |
+          docker push $STORED_QUOTE_IMAGE_TAG
 
   comment:
     name: Deploy Preview Manifests # Posts a comment on PR open for testing
