@@ -73,10 +73,10 @@ jobs:
 
           # copy the manifest to the remote directory
           cd ../remote
-          if [[ -d "./manifests/deploy-previews" ]]
+          if [[ ! -d "./manifests/deploy-previews" ]]
           then
               mkdir ./manifests/deploy-previews
-              if [[ -d "./manifests/deploy-previews/quote" ]]
+              if [[ ! -d "./manifests/deploy-previews/quote" ]]
               then
                 mkdir ./manifests/deploy-previews/quote
               fi
