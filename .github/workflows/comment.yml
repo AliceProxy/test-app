@@ -3,9 +3,50 @@ name: Post Preview-URL
 on: pull_request
 
 jobs:
+  quote-job-image:
+    name: Build Quote Image
+    runs-on: ubuntu-latest
+    env:
+      DEV_REGISTRY: ${{ secrets.DEV_REGISTRY }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    steps:
+      - name: Checkout local
+        uses: actions/checkout@v3
+        with:
+          path: local
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.17.6"
+
+      - name: "Docker Login"
+        uses: docker/login-action@v1
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: Build Quote
+        env:
+          GITHUB_TOKEN: $ {{ secrets.GITHUB_TOKEN }}
+        run: |
+          
+          # export pull number
+          cd local
+          export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          export COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
+
+          docker build -t $DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH .
+          docker push $DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH
+
   comment:
     name: Deploy Preview Manifests # Posts a comment on PR open for testing
     runs-on: ubuntu-latest
+    needs:
+      - quote-job-image
+    env:
+      DEV_REGISTRY: ${{ secrets.DEV_REGISTRY }}
     steps:
       - name: Checkout local
         uses: actions/checkout@v3
@@ -26,17 +67,15 @@ jobs:
         run: |
 
           # export pull number
+          cd local
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           export COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
 
           # copy the manifest to the remote directory
-          cp ./remote/manifests/quote-deploy.yaml ./remote/manifests/quote-deploy-preview-PR$PULL_NUM.yaml
-          cd remote
+          cd ../remote
+          cp ./manifests/quote-deploy.yaml ./manifests/quote-deploy-preview-PR$PULL_NUM.yaml
 
           manifest=./manifests/quote-deploy-preview-PR$PULL_NUM.yaml
-
-          # Begin yaml editing TODO: get the image from CI
-          image='docker.io/datawire/deploy-previews:1.0'
 
           name=$(yq '.metadata.name' $manifest)
           namespace=$(yq '.metadata.namespace' $manifest)
@@ -51,7 +90,7 @@ jobs:
 
           # update the image. Right now this edits every container in the deployment. 
           # TODO: edit this to only be for a specific container incase there are multiple containers
-          yq -i '.spec.template.spec.containers[] |= .image = '\"${image}\" $manifest
+          yq -i '.spec.template.spec.containers[] |= .image = '\"${DEV_REGISTRY}:${PULL_NUM}-${COMMIT_HASH}\" $manifest
 
           yq -i '.metadata.name = '\"${name}'-deploy-preview-PR'${PULL_NUM}\" $manifest
           yq -i '.metadata.namespace = "deploy-previews"' $manifest
