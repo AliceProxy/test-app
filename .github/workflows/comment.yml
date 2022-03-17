@@ -7,7 +7,9 @@ jobs:
     name: Build Quote Image
     runs-on: ubuntu-latest
     outputs:
-      STORED_QUOTE_IMAGE_TAG: ${{ steps.tag.outputs.STORED_QUOTE_IMAGE_TAG }}
+      STORED_QUOTE_IMAGE_TAG: 
+        description: "The image built for quote"
+        value: ${{ steps.tag.outputs.STORED_QUOTE_IMAGE_TAG }}
     env:
       DEV_REGISTRY: ${{ secrets.DEV_REGISTRY }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -94,18 +96,18 @@ jobs:
           namespace=$(yq '.metadata.namespace' $manifest)
 
           # set/modify the app label and remove all others
-          yq -i '.spec.template.metadata.labels.app = '\"${name}'-deploy-preview-PR'${PULL_NUM}\" $manifest
+          yq -i '.spec.template.metadata.labels.app = '\"${name}'-deploy-preview-PR'${PULL_NUM}-${COMMIT_HASH}\" $manifest
           yq -i '.spec.template.metadata |= .labels |= with_entries(select(.key == "app"))' $manifest
 
           # Again for the selector
-          yq -i '.spec.selector.matchLabels.app = '\"${name}'-deploy-preview-PR'${PULL_NUM}\" $manifest
+          yq -i '.spec.selector.matchLabels.app = '\"${name}'-deploy-preview-PR'${PULL_NUM}-${COMMIT_HASH}\" $manifest
           yq -i '.spec.selector |= .matchLabels |= with_entries(select(.key == "app"))' $manifest
 
           # update the image. Right now this edits every container in the deployment. 
           # TODO: edit this to only be for a specific container incase there are multiple containers
           yq -i '.spec.template.spec.containers[] |= .image = '\"${STORED_QUOTE_IMAGE_TAG}\" $manifest
 
-          yq -i '.metadata.name = '\"${name}'-deploy-preview-PR'${PULL_NUM}\" $manifest
+          yq -i '.metadata.name = '\"${name}'-deploy-preview-PR'${PULL_NUM}-${COMMIT_HASH}\" $manifest
           yq -i '.metadata.namespace = "deploy-previews"' $manifest
 
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
