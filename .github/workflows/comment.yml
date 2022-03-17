@@ -30,7 +30,6 @@ jobs:
           password: ${{ env.DOCKER_PASSWORD }}
 
       - name: Build Quote
-        id: tag
         env:
           GITHUB_TOKEN: $ {{ secrets.GITHUB_TOKEN }}
         run: |
