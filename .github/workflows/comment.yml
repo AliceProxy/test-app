@@ -47,7 +47,7 @@ jobs:
 
       - name: Push Quote Image
         run: |
-        docker push $STORED_QUOTE_IMAGE_TAG
+          docker push $STORED_QUOTE_IMAGE_TAG
 
       - name: Store Quote Image Tag
         id: tag
