@@ -73,9 +73,9 @@ jobs:
 
           # copy the manifest to the remote directory
           cd ../remote
-          cp ./manifests/quote-deploy.yaml ./manifests/quote-deploy-preview-PR$PULL_NUM.yaml
+          cp ./manifests/quote/quote-deploy.yaml ./manifests/deploy-previews/quote/quote-deploy-preview-PR$PULL_NUM.yaml
 
-          manifest=./manifests/quote-deploy-preview-PR$PULL_NUM.yaml
+          manifest=./manifests/deploy-previews/quote/quote-deploy-preview-PR$PULL_NUM.yaml
 
           name=$(yq '.metadata.name' $manifest)
           namespace=$(yq '.metadata.namespace' $manifest)
