@@ -41,7 +41,7 @@ jobs:
 
           STORED_QUOTE_IMAGE_TAG=$DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH
 
-          docker build -t $DEV_REGISTRY:$STORED_QUOTE_IMAGE_TAG ./local
+          docker build -t $STORED_QUOTE_IMAGE_TAG ./local
 
           TAG=${STORED_QUOTE_IMAGE_TAG}
           echo "marking STORED_QUOTE_IMAGE_TAG as ${TAG}"
