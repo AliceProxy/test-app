@@ -10,8 +10,8 @@ jobs:
       STORED_QUOTE_IMAGE_TAG: ${{ steps.tag.outputs.STORED_AES_IMAGE_TAG }}
     env:
       DEV_REGISTRY: ${{ secrets.DEV_REGISTRY }}
-      DOCKER_USERNAME: ${{ secrets.GH_DOCKER_BUILD_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.GH_DOCKER_BUILD_TOKEN }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     steps:
       - name: Checkout local
         uses: actions/checkout@v3
