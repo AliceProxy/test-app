@@ -83,7 +83,7 @@ jobs:
           fi
           cp ./manifests/quote/quote-deploy.yaml ./manifests/deploy-previews/quote/quote-deploy-preview-pr$PULL_NUM.yaml
 
-          manifest=./manifests/deploy-previews/quote/quote-deploy-preview-PR$PULL_NUM.yaml
+          manifest=./manifests/deploy-previews/quote/quote-deploy-preview-pr$PULL_NUM.yaml
 
           name=$(yq '.metadata.name' $manifest)
           namespace=$(yq '.metadata.namespace' $manifest)
@@ -100,7 +100,7 @@ jobs:
           # TODO: edit this to only be for a specific container incase there are multiple containers
           yq -i '.spec.template.spec.containers[] |= .image = '\"${DEV_REGISTRY}:${PULL_NUM}-${COMMIT_HASH}\" $manifest
 
-          yq -i '.metadata.name = '\"${name}'-deploy-preview-PR'${PULL_NUM}\" $manifest
+          yq -i '.metadata.name = '\"${name}'-deploy-preview-pr'${PULL_NUM}\" $manifest
           yq -i '.metadata.namespace = "deploy-previews"' $manifest
 
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
