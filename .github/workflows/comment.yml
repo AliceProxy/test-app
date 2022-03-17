@@ -6,10 +6,8 @@ jobs:
   quote-job-image:
     name: Build Quote Image
     runs-on: ubuntu-latest
-    outputs:
-      STORED_QUOTE_IMAGE_TAG: 
-        description: "The image built for quote"
-        value: ${{ steps.tag.outputs.STORED_QUOTE_IMAGE_TAG }}
+    outputs: 
+      STORED_QUOTE_IMAGE_TAG: ${{ steps.tag.outputs.STORED_QUOTE_IMAGE_TAG }}
     env:
       DEV_REGISTRY: ${{ secrets.DEV_REGISTRY }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
