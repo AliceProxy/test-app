@@ -85,7 +85,7 @@ jobs:
           yq -i '.spec.template.metadata |= .labels |= with_entries(select(.key == "app"))' $manifest
 
           # Again for the selector
-          yq -i '.spec.selector.matchLabels.app = '\"${name}'-deploy-preview-PR'${PULL_NUM}}\" $manifest
+          yq -i '.spec.selector.matchLabels.app = '\"${name}'-deploy-preview-PR'${PULL_NUM}\" $manifest
           yq -i '.spec.selector |= .matchLabels |= with_entries(select(.key == "app"))' $manifest
 
           # update the image. Right now this edits every container in the deployment. 
