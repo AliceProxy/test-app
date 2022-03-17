@@ -40,17 +40,19 @@ jobs:
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           export COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
 
-          STORED_QUOTE_IMAGE_TAG=$DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH
-
-          docker build -t $STORED_QUOTE_IMAGE_TAG .
-
-          TAG=${STORED_QUOTE_IMAGE_TAG}
-          echo "marking STORED_QUOTE_IMAGE_TAG as ${TAG}"
-          echo "::set-output name=STORED_QUOTE_IMAGE_TAG::${TAG}"
+          docker build -t $DEV_REGISTRY:$PULL_NUM-COMMIT_HASH ./local
+          echo "STORED_QUOTE_IMAGE_TAG=$DEV_REGISTRY:$PULL_NUM-COMMIT_HASH" >> $GITHUB_ENV
 
       - name: Push Quote Image
         run: |
           docker push $STORED_QUOTE_IMAGE_TAG
+
+      - name: Store Quote Image Tag
+        id: tag
+        run: |
+          TAG=${STORED_QUOTE_IMAGE_TAG}
+          echo "marking STORED_QUOTE_IMAGE_TAG as ${TAG}"
+          echo "::set-output name=STORED_QUOTE_IMAGE_TAG::${TAG}"
 
   comment:
     name: Deploy Preview Manifests # Posts a comment on PR open for testing
