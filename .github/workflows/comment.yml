@@ -34,7 +34,6 @@ jobs:
           dev_registry: ${{ env.DEV_RETGISTRY }}
         env:
           GITHUB_TOKEN: $ {{ secrets.GITHUB_TOKEN }}
-        shell: bash
         run: |
 
           # export pull number
