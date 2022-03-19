@@ -745,7 +745,7 @@ func main() {
 	}
 
 	startingQuotes := []string{
-		"Abstraction is ever present.",
+		"test new quote",
 		"A late night does not make any sense.",
 		"A principal idea is omnipresent, much like candy.",
 		"Nihilism gambles with lives, happiness, and even destiny itself!",
