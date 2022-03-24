@@ -57,7 +57,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITOPS_TOKEN }}
-          repository: AliceProxy/deploy-preview
+          repository: alexgervais/deploy-preview
           path: remote
 
       - name: push manifests
@@ -105,15 +105,15 @@ jobs:
 
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
-          git config user.name "AliceProxy"
-          git config user.email "alicewasko@datawire.io"
+          git config user.name "Alex Gervais"
+          git config user.email "alex@datawire.io"
 
           # TODO: If CI fails in the middle of a run or for whatever reason the deployment preview manifest already exists in the remote repo this will fail since there are no differences
           git add $manifest
           git commit -m "create preview deployment"
 
           #git push --set-upstream deploy-preview-$PULL_NUM
-          git push https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview.git
+          git push https://$GITOPS_TOKEN@github.com/alexgervais/deploy-preview.git
 
       - name: Comment complete
         uses: actions/github-script@v5

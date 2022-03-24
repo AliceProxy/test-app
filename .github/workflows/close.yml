@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITOPS_TOKEN }}
-          repository: AliceProxy/deploy-preview
+          repository: alexgervais/deploy-preview
           path: remote
 
       - name: destroy manifests
@@ -36,14 +36,14 @@ jobs:
           cd remote
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
-          git config user.name "AliceProxy"
-          git config user.email "alicewasko@datawire.io"
+          git config user.name "Alex Gervais"
+          git config user.email "alex@datawire.io"
 
           git add ./manifests/deploy-previews/quote/quote-deploy-preview-pr$PULL_NUM.yaml
           git commit -m "destroy preview deployment"
 
           #git push --set-upstream deploy-preview-$PULL_NUM
-          git push https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview.git
+          git push https://$GITOPS_TOKEN@github.com/alexgervais/deploy-preview.git
 
       - name: Comment removal
         uses: actions/github-script@v5
@@ -71,7 +71,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITOPS_TOKEN }}
-          repository: AliceProxy/deploy-preview
+          repository: alexgervais/deploy-preview
           path: remote
 
       - name: destroy manifests
@@ -88,14 +88,14 @@ jobs:
           cd remote
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
-          git config user.name "AliceProxy"
-          git config user.email "alicewasko@datawire.io"
+          git config user.name "Alex Gervais"
+          git config user.email "alex@datawire.io"
 
           git add ./manifests/deploy-previews/quote/quote-deploy-preview-pr$PULL_NUM.yaml
           git commit -m "destroy preview deployment"
 
           #git push --set-upstream deploy-preview-$PULL_NUM
-          git push https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview.git
+          git push https://$GITOPS_TOKEN@github.com/alexgervais/deploy-preview.git
 
       - name: Comment removal
         uses: actions/github-script@v5
