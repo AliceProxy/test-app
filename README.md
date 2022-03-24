@@ -1,3 +1,5 @@
+Let's deploy this!
+
 # The (Obscure) Quote of the Moment Service
 
 This is a long-lived branch of the [quote service](https://github.com/datawire/quote) for use in the tour application.
