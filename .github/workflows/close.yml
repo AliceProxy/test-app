@@ -33,17 +33,16 @@ jobs:
           git_name="Alice Wasko"
           git_email="alicewasko@datawire.io"
           gitops_repo="github.com/AliceProxy/deploy-preview.git"
-
+          
+          # export pull number
+          export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
           # Check if we need to remove anything
           if [ ! -f "./remote/manifests/deploy-previews/quote/quote-deploy-preview-pr$PULL_NUM.yaml" ]; then
             exit 0 # if the file doesnt exist then we dont need to remove it
           fi
           
-          # export pull number
-          export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-
-          # copy the manifest to the remote directory
+          # remove the manifest from the remote directory
           rm -f ./remote/manifests/deploy-previews/quote/quote-deploy-preview-pr$PULL_NUM.yaml
           cd remote
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
