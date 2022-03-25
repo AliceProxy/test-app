@@ -106,7 +106,7 @@ jobs:
 
           # update the image. Right now this edits every container in the deployment. 
           # TODO: edit this to only be for a specific container incase there are multiple containers
-          yq -i '.spec.template.spec.containers[] |= .image = '\"${DEV_REGISTRY}\$image_name:${PULL_NUM}-${COMMIT_HASH}\" $manifest
+          yq -i '.spec.template.spec.containers[] |= .image = '\"${DEV_REGISTRY}/${image_name}:${PULL_NUM}-${COMMIT_HASH}\" $manifest
 
           yq -i '.metadata.name = '\"${name}'-deploy-preview-pr'${PULL_NUM}\" $manifest
           yq -i '.metadata.namespace = "deploy-previews"' $manifest
