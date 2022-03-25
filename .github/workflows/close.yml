@@ -5,8 +5,8 @@ on:
     types: [ closed ]
 
 jobs:
-  merge_job:
-    if: github.event.pull_request.merged == true
+  close_job:
+    #if: github.event.pull_request.merged == true # No need to differentiate between a merge or close at this point
     name: Merge Job
     runs-on: ubuntu-latest
     steps:
@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITOPS_TOKEN }}
-          repository: AliceProxy/deploy-preview
+          repository: AliceProxy/deploy-preview # Configure this
           path: remote
 
       - name: destroy manifests
@@ -28,6 +28,18 @@ jobs:
           GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
         run: |
 
+
+          # Configure this
+          git_name="Alice Wasko"
+          git_email="alicewasko@datawire.io"
+          gitops_repo="github.com/AliceProxy/deploy-preview.git"
+
+
+          # Check if we need to remove anything
+          if [ ! -f "./remote/manifests/deploy-previews/quote/quote-deploy-preview-pr$PULL_NUM.yaml" ]; then
+            exit 0 # if the file doesnt exist then we dont need to remove it
+          fi
+          
           # export pull number
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
@@ -36,14 +48,14 @@ jobs:
           cd remote
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
-          git config user.name "AliceProxy"
-          git config user.email "alicewasko@datawire.io"
+          git config user.name $git_name
+          git config user.email $git_email
 
           git add ./manifests/deploy-previews/quote/quote-deploy-preview-pr$PULL_NUM.yaml
           git commit -m "destroy preview deployment"
 
           #git push --set-upstream deploy-preview-$PULL_NUM
-          git push https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview.git
+          git push https://$GITOPS_TOKEN@$gitops_repo
 
       - name: Comment removal
         uses: actions/github-script@v5
@@ -54,57 +66,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.issue.owner,
               repo: context.repo.repo,
-              body: 'Your preview manifests have been removed from the gitops repository'
-            })
-
-
-  close_job:
-    if: github.event.pull_request.merged == false
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout local
-        uses: actions/checkout@v3
-        with:
-          path: local
-
-      - name: Checkout remote
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GITOPS_TOKEN }}
-          repository: AliceProxy/deploy-preview
-          path: remote
-
-      - name: destroy manifests
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
-        run: |
-
-          # export pull number
-          export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-
-          # copy the manifest to the remote directory
-          rm -f ./remote/manifests/deploy-previews/quote/quote-deploy-preview-pr$PULL_NUM.yaml
-          cd remote
-          git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
-
-          git config user.name "AliceProxy"
-          git config user.email "alicewasko@datawire.io"
-
-          git add ./manifests/deploy-previews/quote/quote-deploy-preview-pr$PULL_NUM.yaml
-          git commit -m "destroy preview deployment"
-
-          #git push --set-upstream deploy-preview-$PULL_NUM
-          git push https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview.git
-
-      - name: Comment removal
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.issue.owner,
-              repo: context.repo.repo,
-              body: 'Your preview manifests have been removed from the gitops repository'
+              body: 'Any preview manifests for this PR have been removed from the gitops repository.'
             })

@@ -32,13 +32,16 @@ jobs:
           GITHUB_TOKEN: $ {{ secrets.GITHUB_TOKEN }}
         run: |
           
+          # Configure this
+          image_name=quote-deploy-preview
+
           # export pull number
           cd local
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           export COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
 
-          docker build -t $DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH .
-          docker push $DEV_REGISTRY:$PULL_NUM-$COMMIT_HASH
+          docker build -t $DEV_REGISTRY/$image_name:$PULL_NUM-$COMMIT_HASH .
+          docker push $DEV_REGISTRY/$image_name:$PULL_NUM-$COMMIT_HASH
 
   comment:
     name: Deploy Preview Manifests # Posts a comment on PR open for testing
@@ -57,7 +60,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITOPS_TOKEN }}
-          repository: AliceProxy/deploy-preview
+          repository: AliceProxy/deploy-preview # Configure this
           path: remote
 
       - name: push manifests
@@ -66,6 +69,13 @@ jobs:
           GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
         run: |
 
+          # Configure this
+          git_name="Alice Wasko"
+          git_email="alicewasko@datawire.io"
+          gitops_repo="github.com/AliceProxy/deploy-preview.git"
+          # And configure this again since I didnt feel like making it an output
+          image_name=quote-deploy-preview
+
           # export pull number
           cd local
           export PULL_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
@@ -73,11 +83,9 @@ jobs:
 
           # copy the manifest to the remote directory
           cd ../remote
-          if [[ ! -d "./manifests/deploy-previews" ]]
-          then
+          if [[ ! -d "./manifests/deploy-previews" ]]; then
               mkdir ./manifests/deploy-previews
-              if [[ ! -d "./manifests/deploy-previews/quote" ]]
-              then
+              if [[ ! -d "./manifests/deploy-previews/quote" ]]; then
                 mkdir ./manifests/deploy-previews/quote
               fi
           fi
@@ -98,22 +106,22 @@ jobs:
 
           # update the image. Right now this edits every container in the deployment. 
           # TODO: edit this to only be for a specific container incase there are multiple containers
-          yq -i '.spec.template.spec.containers[] |= .image = '\"${DEV_REGISTRY}:${PULL_NUM}-${COMMIT_HASH}\" $manifest
+          yq -i '.spec.template.spec.containers[] |= .image = '\"${DEV_REGISTRY}/${image_name}:${PULL_NUM}-${COMMIT_HASH}\" $manifest
 
           yq -i '.metadata.name = '\"${name}'-deploy-preview-pr'${PULL_NUM}\" $manifest
           yq -i '.metadata.namespace = "deploy-previews"' $manifest
 
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
-          git config user.name "AliceProxy"
-          git config user.email "alicewasko@datawire.io"
+          git config user.name $git_name
+          git config user.email $git_email
 
           # TODO: If CI fails in the middle of a run or for whatever reason the deployment preview manifest already exists in the remote repo this will fail since there are no differences
           git add $manifest
-          git commit -m "create preview deployment"
+          git commit -m "create preview deployment" --signoff
 
           #git push --set-upstream deploy-preview-$PULL_NUM
-          git push https://$GITOPS_TOKEN@github.com/AliceProxy/deploy-preview.git
+          git push https://$GITOPS_TOKEN@$gitops_repo
 
       - name: Comment complete
         uses: actions/github-script@v5
@@ -124,5 +132,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.issue.owner,
               repo: context.repo.repo,
-              body: 'Your preview manifests have been pushed to the gitops repository'
+              body: 'Your preview manifests have been pushed to the gitops repository.\nPlease wait for Argo to sync the manifests into your cluster.\nTodd is currently not functional so the container will crash. This is expected until we have a working image that generates the previewURL for us.'
             })
