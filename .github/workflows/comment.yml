@@ -69,12 +69,20 @@ jobs:
           GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
         run: |
 
-          # Configure this
+          # Configure this for git stuff
           git_name="Alice Wasko"
           git_email="alicewasko@datawire.io"
           gitops_repo="github.com/AliceProxy/deploy-preview.git"
           # And configure this again since I didnt feel like making it an output
           image_name=quote-deploy-preview
+          # Configure this for Todd stuff
+          ingress_host="35.193.14.83"
+          ingress_port=443
+          ingress_tls=true
+          TELEPRESENCE_VERSION="v2.5.3"
+          MANAGER_NAMESPACE="ambassador"
+          todd_image="docker.io/aidanhahn/podd:2.5.3"
+          service_account="ambassador-deploy-previews"
 
           # export pull number
           cd local
@@ -110,6 +118,61 @@ jobs:
 
           yq -i '.metadata.name = '\"${name}'-deploy-preview-pr'${PULL_NUM}\" $manifest
           yq -i '.metadata.namespace = "deploy-previews"' $manifest
+
+          # Make a container for Todd
+          yq -i '.spec.template.spec.containers += 
+          [{
+              "name": "todd", 
+              "image": "'${todd_image}'"
+          }]' $manifest
+
+          # Give Todd ports
+          yq -i '(.spec.template.spec.containers[]|select(.name == "todd").ports) |= 
+          [{
+              "name": "http", 
+              "containerPort": 80
+          }, {
+              "name": 
+              "https", 
+              "containerPort": 443
+          }]' $manifest
+
+          # Give Todd some resources
+          yq -i '(.spec.template.spec.containers[]|select(.name == "todd").resources) |= 
+          {
+              "limits": {
+                  "cpu": "0.1", 
+                  "memory": "100Mi"
+              }
+          }' $manifest
+
+          # Give Todd some arguments
+          yq -i '(.spec.template.spec.containers[]|select(.name == "todd").args) += 
+          [
+              "--workload-name='${name}'",
+              "--workload-namespace='${namespace}'",
+              "--ingress-tls='${ingress_tls}'",
+              "--ingress-port='${ingress_port}'",
+              "--ingress-host='${ingress_host}'"
+          ]' $manifest
+
+          # Give Todd some environment variables
+          yq -i '(.spec.template.spec.containers[]|select(.name == "todd").env) += 
+          [{
+              "name": "AMBASSADOR_CLOUD_APIKEY",
+              "value": "'${AMB_CLOUD_APIKEY}'"
+          },{
+              "name": "TELEPRESENCE_VERSION",
+              "value": "'${TELEPRESENCE_VERSION}'"
+          },{
+              "name": "MANAGER_NAMESPACE",
+              "value": "'${MANAGER_NAMESPACE}'"
+          }]' $manifest
+
+          # service accounts
+          yq -i '.spec.template.spec.serviceAccount = '\"${service_account}\" $manifest
+          yq -i '.spec.template.spec.serviceAccountName = '\"${service_account}\" $manifest
+
 
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
