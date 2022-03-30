@@ -67,6 +67,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+          AMB_CLOUD_APIKEY: ${{ secrets.AMBASSADOR_CLOUD_APIKEY}}
+
         run: |
 
           # Configure this for git stuff
