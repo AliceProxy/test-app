@@ -166,7 +166,7 @@ jobs:
               "valueFrom": {
                 "secretKeyRef": {
                   "name": "'${apikey_secret_name}'",
-                  "key": "'${AMB_CLOUD_APIKEY}'"
+                  "key": "CLOUD_TELEPRESENCE_APIKEY"
                 }
               }
           },{
