@@ -85,6 +85,7 @@ jobs:
           MANAGER_NAMESPACE="ambassador"
           todd_image="docker.io/aidanhahn/podd:2.5.3"
           service_account="ambassador-deploy-previews"
+          apikey_secret_name="preview-deployments-apikey" # name of the k8s secret storing your cloud APIKey
 
           # export pull number
           cd local
@@ -162,7 +163,12 @@ jobs:
           yq -i '(.spec.template.spec.containers[]|select(.name == "todd").env) += 
           [{
               "name": "AMBASSADOR_CLOUD_APIKEY",
-              "value": "'${AMB_CLOUD_APIKEY}'"
+              "valueFrom": {
+                "secretKeyRef": {
+                  "name": "'${apikey_secret_name}'",
+                  "key": "'${AMB_CLOUD_APIKEY}'"
+                }
+              }
           },{
               "name": "TELEPRESENCE_VERSION",
               "value": "'${TELEPRESENCE_VERSION}'"
@@ -174,7 +180,6 @@ jobs:
           # service accounts
           yq -i '.spec.template.spec.serviceAccount = '\"${service_account}\" $manifest
           yq -i '.spec.template.spec.serviceAccountName = '\"${service_account}\" $manifest
-
 
           git config --unset-all http.https://github.com/.extraheader # this is required to unset all the config from the current repository (the one running this job)
 
