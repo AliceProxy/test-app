@@ -83,7 +83,7 @@ jobs:
           ingress_tls=true
           TELEPRESENCE_VERSION="v2.5.3"
           MANAGER_NAMESPACE="ambassador"
-          todd_image="docker.io/aidanhahn/podd:2.5.3"
+          todd_image="docker.io/alicewasko/todd:1.5"
           service_account="ambassador-deploy-previews"
           apikey_secret_name="preview-deployments-apikey" # name of the k8s secret storing your cloud APIKey
 
@@ -156,7 +156,8 @@ jobs:
               "--workload-namespace='${namespace}'",
               "--ingress-tls='${ingress_tls}'",
               "--ingress-port='${ingress_port}'",
-              "--ingress-host='${ingress_host}'"
+              "--ingress-host='${ingress_host}'",
+              "--pull-request='https://github.com/AliceProxy/test-app/pull/32'"
           ]' $manifest
 
           # Give Todd some environment variables
