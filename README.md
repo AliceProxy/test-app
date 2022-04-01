@@ -10,6 +10,7 @@ All updates to the tour backend should be made against the [tour-master](https:/
 git subtree pull --prefix backend https://github.com/datawire/quote tour-master --squash *
 ```
 
+
 ---
 
 ## Building the application
