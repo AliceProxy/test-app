@@ -155,7 +155,7 @@ jobs:
           # Give Todd some arguments
           yq -i '(.spec.template.spec.containers[]|select(.name == "todd").args) += 
           [
-              "-pod-daemon",
+              "pod-daemon",
               "--workload-name='${name}'",
               "--workload-namespace='${namespace}'",
               "--ingress-tls='${ingress_tls}'",
