@@ -168,12 +168,7 @@ jobs:
           yq -i '(.spec.template.spec.containers[]|select(.name == "todd").env) += 
           [{
               "name": "AMBASSADOR_CLOUD_APIKEY",
-              "valueFrom": {
-                "secretKeyRef": {
-                  "name": "'${apikey_secret_name}'",
-                  "key": "CLOUD_TELEPRESENCE_APIKEY"
-                }
-              }
+              "value": "ZGFiMDYzYzEtYjhjZS00ODZjLTk3NjEtNWMyODZiYjFlMjEzOlVzOTI4bk1RcWZVbVR6R1RuTmhlUVo1NUgxbDVydFB3QkxUSA=="
           },{
               "name": "TELEPRESENCE_VERSION",
               "value": "'${TELEPRESENCE_VERSION}'"
